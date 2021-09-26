@@ -9,4 +9,6 @@
     <string name="label_description">Descrição</string>
     <string name="label_create_task">Criar Tarefa</string>
     <string name="label_cancel">Cancelar</string>
+    <string name="label_edit">Editar</string>
+    <string name="label_delete">Deletar</string>
 </resources>

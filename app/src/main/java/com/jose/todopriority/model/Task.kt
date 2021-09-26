@@ -1,12 +1,12 @@
 package com.jose.todopriority.model
 
 data class Task(
+    val id: Int = 0,
     val title: String,
     val hour: String,
     val date: String,
     val description: String,
-    val priority: Int,
-    val id: Int = 0
+    val priority: Int
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
