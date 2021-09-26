@@ -86,6 +86,11 @@ class TaskDB(
             args = arrayOf("$search")
         }
 
+        if(search.isEmpty()){
+            where = ""
+            args = arrayOf()
+        }
+
         var cursor = db.query(TABLE_NAME, null, where, args, null, null, null)
         if (cursor == null){
             db.close()

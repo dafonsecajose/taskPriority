@@ -28,6 +28,11 @@ class TaskListAdapter: ListAdapter<Task, TaskListAdapter.TaskViewHolder>(DiffCal
         holder.bind(getItem(position))
     }
 
+    override fun submitList(list: List<Task>?) {
+        super.submitList(list?.let { ArrayList(it) })
+    }
+
+
     inner class TaskViewHolder(
         private val binding: ItemTaksBinding
     ): RecyclerView.ViewHolder(binding.root) {
@@ -60,6 +65,13 @@ class TaskListAdapter: ListAdapter<Task, TaskListAdapter.TaskViewHolder>(DiffCal
 class DiffCallback: DiffUtil.ItemCallback<Task>() {
     override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean = oldItem == newItem
 
-    override fun areContentsTheSame(oldItem: Task, newItem: Task): Boolean = oldItem.id == newItem.id
+    override fun areContentsTheSame(oldItem: Task, newItem: Task): Boolean {
+        val isTitleTheSame = oldItem.title == newItem.title
+        val isDateTheSame = oldItem.date == newItem.date
+        val isHourTheSame = oldItem.hour == newItem.hour
+        val isDescriptionTheSame = oldItem.description == newItem.description
+
+        return isTitleTheSame && isDateTheSame && isHourTheSame && isDescriptionTheSame
+    }
 
 }

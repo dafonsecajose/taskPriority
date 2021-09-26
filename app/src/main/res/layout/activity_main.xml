@@ -27,6 +27,7 @@
         android:layout_height="0dp"
         tools:visibility="gone"
         tools:itemCount="8"
+        android:scrollbars="vertical"
         app:layout_constraintBottom_toTopOf="@+id/fab"
         app:layout_constraintTop_toBottomOf="@id/tv_title"/>
 

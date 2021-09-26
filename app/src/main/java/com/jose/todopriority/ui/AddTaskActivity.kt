@@ -23,6 +23,7 @@ class AddTaskActivity: AppCompatActivity() {
         binding = ActivityAddTaskBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if(TASK_ID.toIntOrNull() != 0) binding.btnNewTask.setText("Editar Tarefa")
         setupTask()
         setupListerners()
     }
@@ -72,7 +73,12 @@ class AddTaskActivity: AppCompatActivity() {
                 priority = 0,
                 id = intent.getIntExtra(TASK_ID, 0)
             )
-            TaskApplication.instance.taskDB.saveTask(task)
+            if(TASK_ID.toIntOrNull() == 0){
+                TaskApplication.instance.taskDB?.saveTask(task)
+            } else {
+                TaskApplication.instance.taskDB?.updateTask(task)
+            }
+
 
             setResult(Activity.RESULT_OK)
             finish()
