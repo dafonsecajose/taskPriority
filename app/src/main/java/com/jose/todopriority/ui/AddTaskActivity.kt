@@ -2,6 +2,7 @@ package com.jose.todopriority.ui
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -23,7 +24,8 @@ class AddTaskActivity: AppCompatActivity() {
         binding = ActivityAddTaskBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if(TASK_ID.toIntOrNull() != 0) binding.btnNewTask.setText("Editar Tarefa")
+
+        if(intent.hasExtra(TASK_ID)) binding.btnNewTask.setText("Editar Tarefa")
         setupTask()
         setupListerners()
     }
@@ -73,7 +75,8 @@ class AddTaskActivity: AppCompatActivity() {
                 priority = 0,
                 id = intent.getIntExtra(TASK_ID, 0)
             )
-            if(TASK_ID.toIntOrNull() == 0){
+
+            if(!intent.hasExtra(TASK_ID)){
                 TaskApplication.instance.taskDB?.saveTask(task)
             } else {
                 TaskApplication.instance.taskDB?.updateTask(task)
