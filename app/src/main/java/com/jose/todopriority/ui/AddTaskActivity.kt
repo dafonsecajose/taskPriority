@@ -3,10 +3,15 @@ package com.jose.todopriority.ui
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.Adapter
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import com.jose.todopriority.R
 import com.jose.todopriority.application.TaskApplication
 import com.jose.todopriority.databinding.ActivityAddTaskBinding
 import com.jose.todopriority.extensions.format
@@ -18,6 +23,8 @@ class AddTaskActivity: AppCompatActivity() {
 
     private lateinit var binding: ActivityAddTaskBinding
 
+    private lateinit var codePriority : String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -26,8 +33,17 @@ class AddTaskActivity: AppCompatActivity() {
 
 
         if(intent.hasExtra(TASK_ID)) binding.btnNewTask.setText("Editar Tarefa")
+        setupPrioritySpinner()
         setupTask()
         setupListerners()
+    }
+
+    private fun setupPrioritySpinner() {
+        val priorities = arrayListOf("Baixa", "Normal", "Alta")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, priorities)
+
+        binding.spnPriority.adapter = adapter
+
     }
 
     private fun setupTask(){
@@ -39,6 +55,8 @@ class AddTaskActivity: AppCompatActivity() {
             binding.tilDate.text = task?.date ?: ""
             binding.tilHour.text = task?.hour ?: ""
             binding.tilDescription.text = task?.description ?: ""
+            binding.spnPriority.setSelection(task?.priority?.toInt() ?: 0)
+            codePriority = task?.priority.toString()
         }
     }
 
@@ -72,7 +90,7 @@ class AddTaskActivity: AppCompatActivity() {
                 date = binding.tilDate.text,
                 hour = binding.tilHour.text,
                 description = binding.tilDescription.text,
-                priority = 0,
+                priority = codePriority,
                 id = intent.getIntExtra(TASK_ID, 0)
             )
 
@@ -89,6 +107,17 @@ class AddTaskActivity: AppCompatActivity() {
 
         binding.btnCancel.setOnClickListener {
             finish()
+        }
+
+        binding.spnPriority.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+               codePriority = position.toString()
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+
         }
     }
 

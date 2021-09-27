@@ -103,7 +103,7 @@ class TaskDB(
                 cursor.getString(cursor.getColumnIndex(COLUMNS_HOUR)),
                 cursor.getString(cursor.getColumnIndex(COLUMNS_DATE)),
                 cursor.getString(cursor.getColumnIndex(COLUMNS_DESCRIPTION)),
-                cursor.getInt(cursor.getColumnIndex(COLUMNS_PRORITY)),
+                cursor.getString(cursor.getColumnIndex(COLUMNS_PRORITY)),
             )
             list.add(task)
         }

@@ -1,5 +1,7 @@
 package com.jose.todopriority.adapter
 
+import android.graphics.Color
+import android.graphics.Color.red
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
@@ -37,12 +39,34 @@ class TaskListAdapter: ListAdapter<Task, TaskListAdapter.TaskViewHolder>(DiffCal
         private val binding: ItemTaksBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Task){
+
+            when (item.priority.toInt()) {
+                1 -> {
+                   setupStyleItem(Color.parseColor("#C0BC73"))
+
+                }
+                2 -> {
+                   setupStyleItem(Color.parseColor("#E35858"))
+                }
+                else -> {
+                    setupStyleItem(Color.parseColor("#CCCAC1"))
+                }
+            }
+
             binding.tvTitle.text = item.title
             binding.tvDate.text = item.date
             binding.tvDescription.text = item.description
             binding.ivMore.setOnClickListener {
                 showPopup(item)
             }
+        }
+
+        private fun setupStyleItem(color: Int){
+            binding.vieItem.setBackgroundColor(color)
+            binding.tvTitle.setTextColor(Color.WHITE)
+            binding.tvDate.setTextColor(Color.WHITE)
+            binding.tvDescription.setTextColor(Color.WHITE)
+            binding.ivMore.setImageResource(R.drawable.ic_more_white)
         }
 
         fun showPopup(item: Task) {
