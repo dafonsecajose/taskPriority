@@ -1,14 +1,18 @@
 package com.jose.todopriority.ui
 
 import android.app.Activity
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.widget.Adapter
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isEmpty
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.jose.todopriority.R
@@ -31,11 +35,20 @@ class AddTaskActivity: AppCompatActivity() {
         binding = ActivityAddTaskBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupToolbar()
+
 
         if(intent.hasExtra(TASK_ID)) binding.btnNewTask.setText("Editar Tarefa")
         setupPrioritySpinner()
         setupTask()
         setupListerners()
+    }
+
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     private fun setupPrioritySpinner() {
@@ -85,6 +98,7 @@ class AddTaskActivity: AppCompatActivity() {
         }
 
         binding.btnNewTask.setOnClickListener {
+            clearValidadeFied()
             val task = Task(
                 title = binding.tilTitle.text,
                 date = binding.tilDate.text,
@@ -93,16 +107,16 @@ class AddTaskActivity: AppCompatActivity() {
                 priority = codePriority,
                 id = intent.getIntExtra(TASK_ID, 0)
             )
-
-            if(!intent.hasExtra(TASK_ID)){
-                TaskApplication.instance.taskDB?.saveTask(task)
-            } else {
-                TaskApplication.instance.taskDB?.updateTask(task)
+            if(validateField()){
+                if(!intent.hasExtra(TASK_ID)){
+                    TaskApplication.instance.taskDB?.saveTask(task)
+                } else {
+                    TaskApplication.instance.taskDB?.updateTask(task)
+                }
+                setResult(Activity.RESULT_OK)
+                finish()
             }
 
-
-            setResult(Activity.RESULT_OK)
-            finish()
         }
 
         binding.btnCancel.setOnClickListener {
@@ -119,6 +133,55 @@ class AddTaskActivity: AppCompatActivity() {
             }
 
         }
+    }
+
+    private fun validateField() : Boolean {
+
+        when {
+            binding.tilTitle.text.isEmpty() -> {
+                handleError(binding.tilTitle, "Informe o Titulo")
+                return false
+            }
+            binding.tilDate.text.isEmpty() -> {
+                handleError( binding.tilDate, "Informe a Data")
+                return false
+            }
+            binding.tilHour.text.isEmpty() -> {
+                handleError(binding.tilHour, "Informe a hora")
+                return false
+            }
+            binding.tilDescription.text.isEmpty() -> {
+                handleError( binding.tilDescription, "Informe a Descrição")
+                return false
+            }
+            else -> {
+                return true
+            }
+        }
+    }
+
+    private fun clearValidadeFied(){
+        binding.tilTitle.error = null
+        binding.tilDate.error = null
+        binding.tilHour.error = null
+        binding.tilDescription.error = null
+    }
+
+    private fun handleError(field : TextInputLayout, message: String){
+        field.error = message
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId) {
+            android.R.id.home ->{
+                finish()
+                true;
+            }
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
+        }
+
     }
 
     companion object {
