@@ -1,7 +1,12 @@
-package com.jose.todopriority.model
+package com.jose.todopriority.data.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "tb_tasks")
 data class Task(
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
     val title: String,
     val hour: String,
     val date: String,

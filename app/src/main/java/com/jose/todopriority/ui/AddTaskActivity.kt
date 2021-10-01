@@ -1,26 +1,21 @@
 package com.jose.todopriority.ui
 
 import android.app.Activity
-import android.graphics.PorterDuff
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.widget.Adapter
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isEmpty
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import com.jose.todopriority.R
 import com.jose.todopriority.application.TaskApplication
 import com.jose.todopriority.databinding.ActivityAddTaskBinding
-import com.jose.todopriority.extensions.format
-import com.jose.todopriority.extensions.text
-import com.jose.todopriority.model.Task
+import com.jose.todopriority.core.extensions.format
+import com.jose.todopriority.core.extensions.text
+import com.jose.todopriority.data.model.Task
 import java.util.*
 
 class AddTaskActivity: AppCompatActivity() {

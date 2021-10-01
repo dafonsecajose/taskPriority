@@ -19,7 +19,8 @@
 
     <include
         android:id="@+id/include_empty"
-        layout="@layout/empty_state" />
+        layout="@layout/empty_state"
+        android:visibility="gone"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_tasks"

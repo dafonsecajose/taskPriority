@@ -11,12 +11,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.jose.todopriority.R
 import com.jose.todopriority.adapter.TaskListAdapter
 import com.jose.todopriority.application.TaskApplication
+import com.jose.todopriority.core.extensions.createDialog
+import com.jose.todopriority.core.extensions.createProgressDialog
 import com.jose.todopriority.databinding.ActivityMainBinding
+import com.jose.todopriority.presentation.MainViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val dialog by lazy { createProgressDialog() }
     private val adapter by lazy { TaskListAdapter() }
+    private val viewModel by viewModel<MainViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         updateList()
 
         setupListeners()
+        lifecycle.addObserver(viewModel)
     }
 
     private fun setupRecyclerView() {
@@ -38,17 +45,6 @@ class MainActivity : AppCompatActivity() {
         binding.fab.setOnClickListener {
             startActivityForResult(Intent(this, AddTaskActivity::class.java), CREATE_NEW_TASK)
         }
-
-        adapter.listenerEdit = {
-            val intent = Intent(this, AddTaskActivity::class.java)
-            intent.putExtra(AddTaskActivity.TASK_ID, it.id)
-            startActivityForResult(intent, CREATE_NEW_TASK)
-        }
-
-        adapter.listenerDelete = {
-            TaskApplication.instance.taskDB?.deleteTask(it.id)
-            updateList()
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -57,10 +53,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateList() {
-        val list = TaskApplication.instance.taskDB?.searchTasks("")
-        binding.includeEmpty.emptyState.visibility = if (list?.isEmpty() == true) View.VISIBLE
-        else View.GONE
-        adapter.submitList(list)
+        viewModel.state.observe(this) {
+            when (it) {
+                MainViewModel.State.Loading -> dialog.show()
+                is MainViewModel.State.Error -> {
+                    dialog.dismiss()
+                    createDialog{
+                        setMessage(it.error.message)
+                    }.show()
+                }
+                is MainViewModel.State.Success -> {
+                    dialog.dismiss()
+                    adapter.submitList(it.list)
+                    if (it.list.isEmpty()){
+                        binding.includeEmpty
+                    }
+                }
+            }
+        }
 
 
     }

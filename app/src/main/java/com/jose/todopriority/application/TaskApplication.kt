@@ -1,19 +1,19 @@
 package com.jose.todopriority.application
 
 import android.app.Application
-import com.jose.todopriority.datasource.TaskDB
+import com.jose.todopriority.data.di.DataModules
+import com.jose.todopriority.domain.di.DomainModule
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
 class TaskApplication: Application() {
-    var taskDB: TaskDB? = null
-        private set
-
-    companion object {
-        lateinit var instance: TaskApplication
-    }
-
     override fun onCreate() {
         super.onCreate()
-        instance = this
-        taskDB = TaskDB(this)
+        startKoin {
+            androidContext(this@TaskApplication)
+        }
+
+        DataModules.load()
+        DomainModule.load()
     }
 }

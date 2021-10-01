@@ -1,7 +1,6 @@
 package com.jose.todopriority.adapter
 
 import android.graphics.Color
-import android.graphics.Color.red
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
@@ -10,7 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.jose.todopriority.R
 import com.jose.todopriority.databinding.ItemTaksBinding
-import com.jose.todopriority.model.Task
+import com.jose.todopriority.data.model.Task
 
 class TaskListAdapter: ListAdapter<Task, TaskListAdapter.TaskViewHolder>(DiffCallback()) {
 
