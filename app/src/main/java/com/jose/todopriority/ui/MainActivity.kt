@@ -43,13 +43,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         binding.fab.setOnClickListener {
-            startActivityForResult(Intent(this, AddTaskActivity::class.java), CREATE_NEW_TASK)
+            startActivity(Intent(this, AddTaskActivity::class.java))
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if ( requestCode == CREATE_NEW_TASK && resultCode == Activity.RESULT_OK) updateList()
     }
 
     private fun updateList() {
@@ -64,18 +59,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 is MainViewModel.State.Success -> {
                     dialog.dismiss()
+                    binding.includeEmpty.emptyState.visibility = if (it.list.isEmpty()) View.VISIBLE
+                    else View.GONE
                     adapter.submitList(it.list)
-                    if (it.list.isEmpty()){
-                        binding.includeEmpty
-                    }
+
                 }
             }
         }
-
-
-    }
-
-    companion object {
-        private const val CREATE_NEW_TASK = 1000
     }
 }

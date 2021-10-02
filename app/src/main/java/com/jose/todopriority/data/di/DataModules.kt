@@ -11,7 +11,7 @@ import org.koin.dsl.module
 object DataModules {
 
     fun load() {
-        loadKoinModules(databaseModule())
+        loadKoinModules(databaseModule() + repositoryModule())
     }
 
     private fun repositoryModule(): Module {

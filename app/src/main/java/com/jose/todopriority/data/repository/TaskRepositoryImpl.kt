@@ -14,6 +14,14 @@ class TaskRepositoryImpl(
         dao.save(task)
     }
 
+    override suspend fun update(task: Task) {
+        dao.update(task)
+    }
+
+    override suspend fun delete(task: Task) {
+        dao.delete(task)
+    }
+
     override fun list(): Flow<List<Task>> {
         return dao.findAll()
     }

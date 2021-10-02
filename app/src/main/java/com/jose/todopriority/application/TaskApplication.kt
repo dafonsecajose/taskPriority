@@ -3,6 +3,7 @@ package com.jose.todopriority.application
 import android.app.Application
 import com.jose.todopriority.data.di.DataModules
 import com.jose.todopriority.domain.di.DomainModule
+import com.jose.todopriority.presentation.di.PresetationModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -15,5 +16,6 @@ class TaskApplication: Application() {
 
         DataModules.load()
         DomainModule.load()
+        PresetationModule.load()
     }
 }

@@ -12,4 +12,10 @@ interface TaskDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(entity: Task)
+
+    @Update
+    suspend fun update(entity: Task)
+
+    @Delete
+    suspend fun delete(entity: Task)
 }

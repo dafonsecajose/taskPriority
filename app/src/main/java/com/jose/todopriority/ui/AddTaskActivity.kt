@@ -1,6 +1,7 @@
 package com.jose.todopriority.ui
 
-import android.app.Activity
+
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -11,19 +12,24 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import com.jose.todopriority.application.TaskApplication
+import com.jose.todopriority.core.extensions.createDialog
+import com.jose.todopriority.core.extensions.createProgressDialog
 import com.jose.todopriority.databinding.ActivityAddTaskBinding
 import com.jose.todopriority.core.extensions.format
 import com.jose.todopriority.core.extensions.text
 import com.jose.todopriority.data.model.Task
+import com.jose.todopriority.presentation.AddTaskViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
 
 class AddTaskActivity: AppCompatActivity() {
 
     private lateinit var binding: ActivityAddTaskBinding
-
+    private val viewModel by viewModel<AddTaskViewModel>()
+    private val dialog by lazy { createProgressDialog() }
     private lateinit var codePriority : String
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -33,16 +39,15 @@ class AddTaskActivity: AppCompatActivity() {
         setupToolbar()
 
 
-        if(intent.hasExtra(TASK_ID)) binding.btnNewTask.setText("Editar Tarefa")
+        if(intent.hasExtra(TASK_ID)) binding.btnNewTask.text = "Editar Tarefa"
         setupPrioritySpinner()
-        setupTask()
+        setupObserver()
         setupListerners()
     }
 
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
 
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
@@ -54,18 +59,13 @@ class AddTaskActivity: AppCompatActivity() {
 
     }
 
-    private fun setupTask(){
-        if(intent.hasExtra(TASK_ID)){
-            val taskId = intent.getIntExtra(TASK_ID, 0)
-            var list = TaskApplication.instance.taskDB?.searchTasks("$taskId", true)
-            var task = list?.getOrNull(0)
-            binding.tilTitle.text = task?.title ?: ""
-            binding.tilDate.text = task?.date ?: ""
-            binding.tilHour.text = task?.hour ?: ""
-            binding.tilDescription.text = task?.description ?: ""
-            binding.spnPriority.setSelection(task?.priority?.toInt() ?: 0)
-            codePriority = task?.priority.toString()
-        }
+    private fun setupTask(task: Task){
+            binding.tilTitle.text = task.title
+            binding.tilDate.text = task.date
+            binding.tilHour.text = task.hour
+            binding.tilDescription.text = task.description
+            binding.spnPriority.setSelection(task.priority.toInt())
+            codePriority = task.priority
     }
 
     private fun setupListerners() {
@@ -103,12 +103,12 @@ class AddTaskActivity: AppCompatActivity() {
                 id = intent.getIntExtra(TASK_ID, 0)
             )
             if(validateField()){
+
                 if(!intent.hasExtra(TASK_ID)){
-                    TaskApplication.instance.taskDB?.saveTask(task)
+                        viewModel.saveTask(task)
                 } else {
-                    TaskApplication.instance.taskDB?.updateTask(task)
+                    //TaskApplication.instance.taskDB?.updateTask(task)
                 }
-                setResult(Activity.RESULT_OK)
                 finish()
             }
 
@@ -170,13 +170,35 @@ class AddTaskActivity: AppCompatActivity() {
         return when(item.itemId) {
             android.R.id.home ->{
                 finish()
-                true;
+                true
             }
             else -> {
                 super.onOptionsItemSelected(item)
             }
         }
 
+    }
+
+    private fun setupObserver() {
+        viewModel.state.observe(this){
+            when (it) {
+                is AddTaskViewModel.State.Error -> {
+                    dialog.dismiss()
+                    createDialog {
+                        setMessage(it.error.message)
+                    }.show()
+                }
+                AddTaskViewModel.State.Loading -> dialog.show()
+                AddTaskViewModel.State.Saved -> {
+                    dialog.dismiss()
+                    createDialog { setMessage("Tarefa salva com sucesso") }.show()
+                }
+                is AddTaskViewModel.State.Success -> {
+                    dialog.dismiss()
+                    setupTask(it.task)
+                }
+            }
+        }
     }
 
     companion object {
