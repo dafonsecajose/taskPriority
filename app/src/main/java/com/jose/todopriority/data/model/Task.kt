@@ -2,6 +2,7 @@ package com.jose.todopriority.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.io.Serializable
 
 @Entity(tableName = "tb_tasks")
 data class Task(
@@ -12,7 +13,7 @@ data class Task(
     val date: String,
     val description: String,
     val priority: String
-) {
+):Serializable {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

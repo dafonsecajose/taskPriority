@@ -28,6 +28,7 @@ class AddTaskActivity: AppCompatActivity() {
     private val viewModel by viewModel<AddTaskViewModel>()
     private val dialog by lazy { createProgressDialog() }
     private lateinit var codePriority : String
+    private lateinit var  taskEdit: Task
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +40,11 @@ class AddTaskActivity: AppCompatActivity() {
         setupToolbar()
 
 
-        if(intent.hasExtra(TASK_ID)) binding.btnNewTask.text = "Editar Tarefa"
+        if(intent.hasExtra(TASK)){
+            binding.btnNewTask.text = "Editar Tarefa"
+            taskEdit = intent.getSerializableExtra(TASK) as Task
+            setupTask(taskEdit)
+        }
         setupPrioritySpinner()
         setupObserver()
         setupListerners()
@@ -100,16 +105,14 @@ class AddTaskActivity: AppCompatActivity() {
                 hour = binding.tilHour.text,
                 description = binding.tilDescription.text,
                 priority = codePriority,
-                id = intent.getIntExtra(TASK_ID, 0)
+                id = intent.getIntExtra(TASK, 0)
             )
             if(validateField()){
-
-                if(!intent.hasExtra(TASK_ID)){
-                        viewModel.saveTask(task)
+                if(!intent.hasExtra(TASK)){
+                    viewModel.saveTask(task)
                 } else {
-                    //TaskApplication.instance.taskDB?.updateTask(task)
+                    viewModel.updateTask(task)
                 }
-                finish()
             }
 
         }
@@ -192,17 +195,22 @@ class AddTaskActivity: AppCompatActivity() {
                 AddTaskViewModel.State.Saved -> {
                     dialog.dismiss()
                     createDialog { setMessage("Tarefa salva com sucesso") }.show()
+                    this.finish()
                 }
                 is AddTaskViewModel.State.Success -> {
                     dialog.dismiss()
-                    setupTask(it.task)
                 }
+                AddTaskViewModel.State.Updated ->{
+                    dialog.dismiss()
+                    this.finish()
+                }
+
             }
         }
     }
 
     companion object {
-        const val TASK_ID = "task_id"
+        const val TASK = "task"
     }
 
 }

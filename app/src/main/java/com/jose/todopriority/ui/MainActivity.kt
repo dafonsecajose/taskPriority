@@ -45,6 +45,16 @@ class MainActivity : AppCompatActivity() {
         binding.fab.setOnClickListener {
             startActivity(Intent(this, AddTaskActivity::class.java))
         }
+
+        adapter.listenerDelete = {
+
+        }
+
+        adapter.listenerEdit = {
+            val intent = Intent(this, AddTaskActivity::class.java)
+            intent.putExtra("task", it)
+            startActivity(intent)
+        }
     }
 
     private fun updateList() {

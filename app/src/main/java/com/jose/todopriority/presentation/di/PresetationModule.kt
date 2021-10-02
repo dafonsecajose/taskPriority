@@ -16,7 +16,7 @@ object PresetationModule {
     private fun viewModelModules(): Module {
         return module {
             viewModel { MainViewModel(get()) }
-            viewModel { AddTaskViewModel(get(), get()) }
+            viewModel { AddTaskViewModel(get(), get(), get()) }
         }
     }
 }
