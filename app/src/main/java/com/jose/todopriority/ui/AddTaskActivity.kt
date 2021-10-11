@@ -4,9 +4,8 @@ package com.jose.todopriority.ui
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputLayout
@@ -27,7 +26,6 @@ class AddTaskActivity: AppCompatActivity() {
     private lateinit var binding: ActivityAddTaskBinding
     private val viewModel by viewModel<AddTaskViewModel>()
     private val dialog by lazy { createProgressDialog() }
-    private lateinit var codePriority : String
     private lateinit var  taskEdit: Task
 
     @SuppressLint("SetTextI18n")
@@ -40,12 +38,12 @@ class AddTaskActivity: AppCompatActivity() {
         setupToolbar()
 
 
+        setupPrioritySpinner()
         if(intent.hasExtra(TASK)){
             binding.btnNewTask.text = "Editar Tarefa"
             taskEdit = intent.getSerializableExtra(TASK) as Task
             setupTask(taskEdit)
         }
-        setupPrioritySpinner()
         setupObserver()
         setupListerners()
     }
@@ -70,7 +68,6 @@ class AddTaskActivity: AppCompatActivity() {
             binding.tilHour.text = task.hour
             binding.tilDescription.text = task.description
             binding.spnPriority.setSelection(task.priority.toInt())
-            codePriority = task.priority
     }
 
     private fun setupListerners() {
@@ -104,7 +101,7 @@ class AddTaskActivity: AppCompatActivity() {
                 date = binding.tilDate.text,
                 hour = binding.tilHour.text,
                 description = binding.tilDescription.text,
-                priority = codePriority,
+                priority = binding.spnPriority.selectedItemPosition.toString(),
                 id = if (intent.hasExtra(TASK)) taskEdit.id else 0
             )
             if(validateField()){
@@ -118,17 +115,6 @@ class AddTaskActivity: AppCompatActivity() {
 
         binding.btnCancel.setOnClickListener {
             finish()
-        }
-
-        binding.spnPriority.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-               codePriority = position.toString()
-            }
-
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-
-            }
-
         }
     }
 
@@ -193,7 +179,8 @@ class AddTaskActivity: AppCompatActivity() {
                 AddTaskViewModel.State.Loading -> dialog.show()
                 AddTaskViewModel.State.Saved -> {
                     dialog.dismiss()
-                    createDialog { setMessage("Tarefa salva com sucesso") }.show()
+                    Toast.makeText(this@AddTaskActivity, "Tarefa criada com sucesso!",
+                        Toast.LENGTH_LONG).show()
                     this.finish()
                 }
                 is AddTaskViewModel.State.Success -> {

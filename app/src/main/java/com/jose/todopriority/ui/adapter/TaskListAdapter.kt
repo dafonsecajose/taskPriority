@@ -68,7 +68,7 @@ class TaskListAdapter: ListAdapter<Task, TaskListAdapter.TaskViewHolder>(DiffCal
             binding.ivMore.setColorFilter(color)
         }
 
-        fun showPopup(item: Task) {
+        private fun showPopup(item: Task) {
             val ivMore = binding.ivMore
             val popupMenu = PopupMenu(ivMore.context, ivMore)
             popupMenu.menuInflater.inflate(R.menu.popup_menu, popupMenu.menu)
