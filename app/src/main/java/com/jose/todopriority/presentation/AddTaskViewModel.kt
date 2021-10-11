@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class AddTaskViewModel(
-    private val getTaskUseCase: ListTaskUseCase,
     private val saveTaskUseCase: SaveTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase
 ): ViewModel() {

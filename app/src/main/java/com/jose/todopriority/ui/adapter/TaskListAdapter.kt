@@ -1,4 +1,4 @@
-package com.jose.todopriority.adapter
+package com.jose.todopriority.ui.adapter
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.jose.todopriority.R
-import com.jose.todopriority.databinding.ItemTaksBinding
 import com.jose.todopriority.data.model.Task
+import com.jose.todopriority.databinding.ItemTaskBinding
 
 class TaskListAdapter: ListAdapter<Task, TaskListAdapter.TaskViewHolder>(DiffCallback()) {
 
@@ -21,7 +21,7 @@ class TaskListAdapter: ListAdapter<Task, TaskListAdapter.TaskViewHolder>(DiffCal
         viewType: Int
     ): TaskListAdapter.TaskViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemTaksBinding.inflate(inflater, parent, false)
+        val binding = ItemTaskBinding.inflate(inflater, parent, false)
         return TaskViewHolder(binding)
     }
 
@@ -35,7 +35,7 @@ class TaskListAdapter: ListAdapter<Task, TaskListAdapter.TaskViewHolder>(DiffCal
 
 
     inner class TaskViewHolder(
-        private val binding: ItemTaksBinding
+        private val binding: ItemTaskBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Task){
 
@@ -61,11 +61,11 @@ class TaskListAdapter: ListAdapter<Task, TaskListAdapter.TaskViewHolder>(DiffCal
         }
 
         private fun setupStyleItem(color: Int){
-            binding.vieItem.setBackgroundColor(color)
-            binding.tvTitle.setTextColor(Color.WHITE)
-            binding.tvDate.setTextColor(Color.WHITE)
-            binding.tvDescription.setTextColor(Color.WHITE)
-            binding.ivMore.setImageResource(R.drawable.ic_more_white)
+            binding.vieItem.strokeColor = color
+            binding.tvTitle.setTextColor(color)
+            binding.tvDate.setTextColor(color)
+            binding.tvDescription.setTextColor(color)
+            binding.ivMore.setColorFilter(color)
         }
 
         fun showPopup(item: Task) {

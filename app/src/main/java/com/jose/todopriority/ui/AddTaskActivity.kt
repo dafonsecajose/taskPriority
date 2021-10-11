@@ -105,7 +105,7 @@ class AddTaskActivity: AppCompatActivity() {
                 hour = binding.tilHour.text,
                 description = binding.tilDescription.text,
                 priority = codePriority,
-                id = intent.getIntExtra(TASK, 0)
+                id = if (intent.hasExtra(TASK)) taskEdit.id else 0
             )
             if(validateField()){
                 if(!intent.hasExtra(TASK)){
@@ -114,7 +114,6 @@ class AddTaskActivity: AppCompatActivity() {
                     viewModel.updateTask(task)
                 }
             }
-
         }
 
         binding.btnCancel.setOnClickListener {
@@ -127,7 +126,7 @@ class AddTaskActivity: AppCompatActivity() {
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
-                TODO("Not yet implemented")
+
             }
 
         }

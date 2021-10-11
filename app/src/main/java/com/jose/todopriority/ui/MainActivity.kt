@@ -1,16 +1,11 @@
 package com.jose.todopriority.ui
 
-import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import androidx.loader.app.LoaderManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.jose.todopriority.R
-import com.jose.todopriority.adapter.TaskListAdapter
-import com.jose.todopriority.application.TaskApplication
+import com.jose.todopriority.ui.adapter.TaskListAdapter
 import com.jose.todopriority.core.extensions.createDialog
 import com.jose.todopriority.core.extensions.createProgressDialog
 import com.jose.todopriority.databinding.ActivityMainBinding
@@ -47,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         adapter.listenerDelete = {
-
+            viewModel.deleteTask(it)
         }
 
         adapter.listenerEdit = {
@@ -72,7 +67,9 @@ class MainActivity : AppCompatActivity() {
                     binding.includeEmpty.emptyState.visibility = if (it.list.isEmpty()) View.VISIBLE
                     else View.GONE
                     adapter.submitList(it.list)
-
+                }
+                MainViewModel.State.Deleted -> {
+                    dialog.dismiss()
                 }
             }
         }
