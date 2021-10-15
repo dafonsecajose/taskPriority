@@ -11,7 +11,7 @@ interface TaskDao {
     fun findAll(): Flow<List<Task>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun save(entity: Task)
+    suspend fun save(entity: Task): Long
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun update(entity: Task)

@@ -10,8 +10,8 @@ class TaskRepositoryImpl(
 
     private val dao = appDatabase.taskDao()
 
-    override suspend fun save(task: Task) {
-        dao.save(task)
+    override suspend fun save(task: Task): Flow<Long> {
+        return dao.save(task) as Flow<Long>
     }
 
     override suspend fun update(task: Task) {

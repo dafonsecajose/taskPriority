@@ -3,6 +3,7 @@ package com.jose.todopriority.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -27,6 +28,7 @@ class AddTaskActivity: AppCompatActivity() {
     private val viewModel by viewModel<AddTaskViewModel>()
     private val dialog by lazy { createProgressDialog() }
     private lateinit var  taskEdit: Task
+    private var notificationTaskId: Long = 0
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,6 +109,7 @@ class AddTaskActivity: AppCompatActivity() {
             if(validateField()){
                 if(!intent.hasExtra(TASK)){
                     viewModel.saveTask(task)
+
                 } else {
                     viewModel.updateTask(task)
                 }
@@ -193,6 +196,10 @@ class AddTaskActivity: AppCompatActivity() {
 
             }
         }
+
+        viewModel.taskId.observe(this, androidx.lifecycle.Observer {
+            notificationTaskId = it
+        })
     }
 
     companion object {

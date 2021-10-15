@@ -1,9 +1,6 @@
 package com.jose.todopriority.domain.di
 
-import com.jose.todopriority.domain.DeleteTaskUseCase
-import com.jose.todopriority.domain.ListTaskUseCase
-import com.jose.todopriority.domain.SaveTaskUseCase
-import com.jose.todopriority.domain.UpdateTaskUseCase
+import com.jose.todopriority.domain.*
 import org.koin.core.context.loadKoinModules
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -17,6 +14,7 @@ object DomainModule {
         return module {
             factory { ListTaskUseCase(get()) }
             factory { SaveTaskUseCase(get()) }
+            factory { NewSaveTaskUseCase(get()) }
             factory { UpdateTaskUseCase(get()) }
             factory { DeleteTaskUseCase(get()) }
         }
