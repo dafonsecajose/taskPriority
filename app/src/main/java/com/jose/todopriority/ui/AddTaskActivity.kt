@@ -9,8 +9,6 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
-import android.os.SystemClock
-import android.provider.ContactsContract
 import android.util.Log
 import android.view.MenuItem
 import android.widget.ArrayAdapter
@@ -19,7 +17,6 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputLayout
@@ -31,13 +28,10 @@ import com.jose.todopriority.databinding.ActivityAddTaskBinding
 import com.jose.todopriority.core.extensions.format
 import com.jose.todopriority.core.extensions.text
 import com.jose.todopriority.data.model.Task
-import com.jose.todopriority.job.NotificationJobService
 import com.jose.todopriority.job.NotificationUtil
 import com.jose.todopriority.job.NotificationWorkManager
 import com.jose.todopriority.presentation.AddTaskViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -208,9 +202,7 @@ class AddTaskActivity: AppCompatActivity() {
                 AddTaskViewModel.State.Saved -> {
                     dialog.dismiss()
                     if (notificationTaskId != null) {
-                        //createScheduler(task)
                             createWorkManager(task)
-                        Log.i("IDNOT", notificationTaskId.toString())
                     }
                     Toast.makeText(this@AddTaskActivity, "Tarefa agendada com sucesso!",
                         Toast.LENGTH_LONG).show()
@@ -224,11 +216,8 @@ class AddTaskActivity: AppCompatActivity() {
                 AddTaskViewModel.State.Updated ->{
                     notificationTaskId = taskEdit.id
                     if (notificationTaskId != null) {
-                        //cancelJobScheduler()
                         cancelNotification()
                         createWorkManager(task)
-                       // createScheduler(task)
-                        Log.i("IDNOT", notificationTaskId.toString())
                     }
                     dialog.dismiss()
                     this.finish()
@@ -241,32 +230,6 @@ class AddTaskActivity: AppCompatActivity() {
         })
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createScheduler(task: Task) {
-        val scheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        val serviceName = ComponentName(packageName ,NotificationJobService::class.java.name)
-
-        //calculate item
-        val timeString = "${task.date} ${task.hour}"
-        val dateTime = LocalDateTime.parse(timeString, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
-            .atZone(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
-
-        val timeFuture = System.currentTimeMillis() - dateTime
-
-        //Create schedule build info
-        val builder = JobInfo.Builder(notificationTaskId?.toInt()!!, serviceName)
-            .setMinimumLatency(timeFuture)
-
-        val extras = PersistableBundle()
-        extras.putString(SCHEDULE_EXTRA_TASK_TITLE, task.title)
-
-        val jobInfo = builder.setExtras(extras)
-            .build()
-
-        scheduler.schedule(jobInfo)
-    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createWorkManager(task: Task) {
@@ -295,18 +258,6 @@ class AddTaskActivity: AppCompatActivity() {
         val notificationUtil = NotificationUtil
         notificationUtil.deleteNotification(application, notificationTaskId?.toInt()!!)
     }
-
-    private fun cancelJobScheduler(){
-        val scheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        scheduler.allPendingJobs.forEach {
-            Log.i("cance", "forEach ${it.id.toString()} ${notificationTaskId.toString()}")
-            if (it.id.toLong() == notificationTaskId){
-                Log.i("cancel", notificationTaskId.toString())
-                scheduler.cancel(it.id)
-            }
-        }
-    }
-
 
     companion object {
         const val SCHEDULE_EXTRA_TASK_TITLE = "SCHEDULE_EXTRA_TASK_TITLE"
