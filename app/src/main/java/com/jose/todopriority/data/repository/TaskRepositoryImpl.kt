@@ -10,8 +10,8 @@ class TaskRepositoryImpl(
 
     private val dao = appDatabase.taskDao()
 
-    override suspend fun save(task: Task): Flow<Long> {
-        return dao.save(task) as Flow<Long>
+    override suspend fun save(task: Task) {
+        dao.save(task)
     }
 
     override suspend fun update(task: Task) {
@@ -25,4 +25,14 @@ class TaskRepositoryImpl(
     override fun list(): Flow<List<Task>> {
         return dao.findAll()
     }
+
+    override fun taskById(id: Long): Flow<Task> {
+        return dao.findTaskById(id)
+    }
+
+    override fun lastTaskId(): Flow<Long> {
+        return dao.getLastTask()
+    }
+
+
 }

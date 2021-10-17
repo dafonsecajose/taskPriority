@@ -9,6 +9,7 @@ import com.jose.todopriority.ui.adapter.TaskListAdapter
 import com.jose.todopriority.core.extensions.createDialog
 import com.jose.todopriority.core.extensions.createProgressDialog
 import com.jose.todopriority.databinding.ActivityMainBinding
+import com.jose.todopriority.job.NotificationUtil
 import com.jose.todopriority.presentation.MainViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -42,12 +43,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         adapter.listenerDelete = {
+            NotificationUtil.deleteNotification(application, it.id.toInt())
             viewModel.deleteTask(it)
         }
 
         adapter.listenerEdit = {
             val intent = Intent(this, AddTaskActivity::class.java)
-            intent.putExtra("task", it)
+            intent.putExtra("taskId", it.id)
             startActivity(intent)
         }
     }

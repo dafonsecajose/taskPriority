@@ -13,8 +13,9 @@ object DomainModule {
     private fun useCaseModules(): Module {
         return module {
             factory { ListTaskUseCase(get()) }
+            factory { FindTaskUseCase(get()) }
             factory { SaveTaskUseCase(get()) }
-            factory { NewSaveTaskUseCase(get()) }
+            factory { LastTaskIdUseCase(get()) }
             factory { UpdateTaskUseCase(get()) }
             factory { DeleteTaskUseCase(get()) }
         }

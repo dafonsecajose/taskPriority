@@ -2,12 +2,25 @@ package com.jose.todopriority.ui
 
 
 import android.annotation.SuppressLint
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
+import android.content.ComponentName
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
+import android.os.PersistableBundle
+import android.os.SystemClock
+import android.provider.ContactsContract
 import android.util.Log
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -18,18 +31,31 @@ import com.jose.todopriority.databinding.ActivityAddTaskBinding
 import com.jose.todopriority.core.extensions.format
 import com.jose.todopriority.core.extensions.text
 import com.jose.todopriority.data.model.Task
+import com.jose.todopriority.job.NotificationJobService
+import com.jose.todopriority.job.NotificationUtil
+import com.jose.todopriority.job.NotificationWorkManager
 import com.jose.todopriority.presentation.AddTaskViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class AddTaskActivity: AppCompatActivity() {
 
     private lateinit var binding: ActivityAddTaskBinding
     private val viewModel by viewModel<AddTaskViewModel>()
     private val dialog by lazy { createProgressDialog() }
-    private lateinit var  taskEdit: Task
-    private var notificationTaskId: Long = 0
+    private var taskIdEdit: Long? = null
+    private val workManager = WorkManager.getInstance(application)
+    private lateinit var task: Task
+    private lateinit var taskEdit: Task
+    private var notificationTaskId: Long? = null
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,16 +64,15 @@ class AddTaskActivity: AppCompatActivity() {
         setContentView(binding.root)
 
         setupToolbar()
-
-
         setupPrioritySpinner()
+        setupObserver()
+        setupListeners()
+
         if(intent.hasExtra(TASK)){
             binding.btnNewTask.text = "Editar Tarefa"
-            taskEdit = intent.getSerializableExtra(TASK) as Task
-            setupTask(taskEdit)
+            taskIdEdit = intent.getLongExtra(TASK, 0)
+            viewModel.findTaskById(taskIdEdit!!)
         }
-        setupObserver()
-        setupListerners()
     }
 
     private fun setupToolbar() {
@@ -72,7 +97,7 @@ class AddTaskActivity: AppCompatActivity() {
             binding.spnPriority.setSelection(task.priority.toInt())
     }
 
-    private fun setupListerners() {
+    private fun setupListeners() {
         binding.tilDate.editText?.setOnClickListener {
             val datePicker = MaterialDatePicker.Builder.datePicker().build()
             datePicker.addOnPositiveButtonClickListener {
@@ -97,8 +122,8 @@ class AddTaskActivity: AppCompatActivity() {
         }
 
         binding.btnNewTask.setOnClickListener {
-            clearValidadeFied()
-            val task = Task(
+            clearValidateField()
+            task = Task(
                 title = binding.tilTitle.text,
                 date = binding.tilDate.text,
                 hour = binding.tilHour.text,
@@ -146,7 +171,7 @@ class AddTaskActivity: AppCompatActivity() {
         }
     }
 
-    private fun clearValidadeFied(){
+    private fun clearValidateField(){
         binding.tilTitle.error = null
         binding.tilDate.error = null
         binding.tilHour.error = null
@@ -167,9 +192,9 @@ class AddTaskActivity: AppCompatActivity() {
                 super.onOptionsItemSelected(item)
             }
         }
-
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setupObserver() {
         viewModel.state.observe(this){
             when (it) {
@@ -182,18 +207,32 @@ class AddTaskActivity: AppCompatActivity() {
                 AddTaskViewModel.State.Loading -> dialog.show()
                 AddTaskViewModel.State.Saved -> {
                     dialog.dismiss()
-                    Toast.makeText(this@AddTaskActivity, "Tarefa criada com sucesso!",
+                    if (notificationTaskId != null) {
+                        //createScheduler(task)
+                            createWorkManager(task)
+                        Log.i("IDNOT", notificationTaskId.toString())
+                    }
+                    Toast.makeText(this@AddTaskActivity, "Tarefa agendada com sucesso!",
                         Toast.LENGTH_LONG).show()
                     this.finish()
                 }
                 is AddTaskViewModel.State.Success -> {
+                    taskEdit = it.task
+                    setupTask(taskEdit)
                     dialog.dismiss()
                 }
                 AddTaskViewModel.State.Updated ->{
+                    notificationTaskId = taskEdit.id
+                    if (notificationTaskId != null) {
+                        //cancelJobScheduler()
+                        cancelNotification()
+                        createWorkManager(task)
+                       // createScheduler(task)
+                        Log.i("IDNOT", notificationTaskId.toString())
+                    }
                     dialog.dismiss()
                     this.finish()
                 }
-
             }
         }
 
@@ -202,8 +241,78 @@ class AddTaskActivity: AppCompatActivity() {
         })
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createScheduler(task: Task) {
+        val scheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val serviceName = ComponentName(packageName ,NotificationJobService::class.java.name)
+
+        //calculate item
+        val timeString = "${task.date} ${task.hour}"
+        val dateTime = LocalDateTime.parse(timeString, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+
+        val timeFuture = System.currentTimeMillis() - dateTime
+
+        //Create schedule build info
+        val builder = JobInfo.Builder(notificationTaskId?.toInt()!!, serviceName)
+            .setMinimumLatency(timeFuture)
+
+        val extras = PersistableBundle()
+        extras.putString(SCHEDULE_EXTRA_TASK_TITLE, task.title)
+
+        val jobInfo = builder.setExtras(extras)
+            .build()
+
+        scheduler.schedule(jobInfo)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createWorkManager(task: Task) {
+        //calculate item
+        val timeString = "${task.date} ${task.hour}"
+        val dateTime = LocalDateTime.parse(timeString, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+
+        val timeFuture = dateTime - System.currentTimeMillis()
+
+        val data = Data.Builder()
+        data.putString(EXTRA_TASK_TITLE, task.title)
+        data.putLong(EXTRA_TASK_ID, notificationTaskId!!)
+
+        val workRequest = OneTimeWorkRequest.Builder(NotificationWorkManager::class.java)
+            .setInitialDelay(timeFuture, TimeUnit.MILLISECONDS)
+            .setInputData(data.build())
+            .addTag(notificationTaskId.toString())
+            .build()
+        workManager.enqueue(workRequest)
+    }
+
+    private fun cancelNotification() {
+        val notificationUtil = NotificationUtil
+        notificationUtil.deleteNotification(application, notificationTaskId?.toInt()!!)
+    }
+
+    private fun cancelJobScheduler(){
+        val scheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        scheduler.allPendingJobs.forEach {
+            Log.i("cance", "forEach ${it.id.toString()} ${notificationTaskId.toString()}")
+            if (it.id.toLong() == notificationTaskId){
+                Log.i("cancel", notificationTaskId.toString())
+                scheduler.cancel(it.id)
+            }
+        }
+    }
+
+
     companion object {
-        const val TASK = "task"
+        const val SCHEDULE_EXTRA_TASK_TITLE = "SCHEDULE_EXTRA_TASK_TITLE"
+        const val EXTRA_TASK_TITLE = "EXTRA_TASK_TITLE"
+        const val EXTRA_TASK_ID = "EXTRA_TASK_ID"
+        const val TASK = "taskId"
     }
 
 }

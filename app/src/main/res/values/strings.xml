@@ -11,5 +11,8 @@
     <string name="label_cancel">Cancelar</string>
     <string name="label_edit">Editar</string>
     <string name="label_delete">Deletar</string>
+    <string name="notification_channel_name">Task</string>
+    <string name="notification_channel_description">Relembre sobre a sua tarefa</string>
+    <string name="notification_text">Você tem um tarafe agendada! Bora ver como fazer isso?</string>
 
 </resources>
